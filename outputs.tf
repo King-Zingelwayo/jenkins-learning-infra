@@ -42,3 +42,4 @@ output "log_group_name" {
   description = "CloudWatch log group."
   value       = module.reclaim.log_group_name
 }
+

@@ -1,5 +1,5 @@
 aws_region = "eu-west-1"
-name       = "reclaim-prod"
+name       = "reclaim-prod-app"
 
 task_definition = {
   image     = "indlovucloud/reclaim-aws-nukeui"

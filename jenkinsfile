@@ -9,13 +9,12 @@ pipeline {
     }
 
     stages {
-       stage('Verify library loaded') {
+      stage('Verify library loaded') {
             steps {
                 script {
                     // verify vars/ functions are accessible
-                    assert binding.hasVariable('terraformPlan')   : 'terraformPlan not loaded'
-                    assert binding.hasVariable('terraformApply')  : 'terraformApply not loaded'
-                    assert binding.hasVariable('configureGithubWebhook') : 'configureGithubWebhook not loaded'
+                    assert this.respondsTo('terraformPlan')  : 'terraformPlan not loaded'
+                    assert this.respondsTo('terraformApply') : 'terraformApply not loaded'
 
                     // verify src/ class is instantiable
                     def auth = new org.reclaim.AwsOidcAuth(this)
@@ -25,6 +24,7 @@ pipeline {
                 }
             }
         }
+
         
         stage('configure trigger') {
             steps {

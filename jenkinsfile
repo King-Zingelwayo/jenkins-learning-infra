@@ -1,0 +1,60 @@
+@Library('reclaim-lib') _
+
+
+pipeline {
+    agent { label 'docker-agent' }
+
+    environment {
+        AWS_ROLE_ARN = credentials('aws-role-arn')
+    }
+
+    stages {
+        stage('Verify library loaded') {
+            steps {
+                script {
+                    echo 'Shared library loaded successfully'
+                    def auth = new org.reclaim.AwsOidcAuth(this)
+                    echo "AwsOidcAuth class instantiated: ${auth.class.name}"
+                }
+            }
+        }
+        
+        stage('configure trigger') {
+            steps {
+                configureTrigger('main')
+                configureGithubWebhook(credentialsId: 'github-token')
+            }
+        }
+
+        stage('checkout repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('terraform plan') {
+            steps {
+               terraformPlan(dir: '.', workspace: 'dev', roleArn: env.AWS_ROLE_ARN)
+            }
+        }
+
+        stage('approval') {
+            steps {
+                input message: 'Review the plan. Approve to apply?', ok: 'Apply'
+            }
+        }
+
+        stage('terraform apply') {
+            steps {
+                terraformApply(dir: '.', roleArn: env.AWS_ROLE_ARN)
+            }
+        }
+
+    }
+
+    post {
+        always {
+            echo "Pipeline completed. Cleaning up workspace."
+        }
+    }
+}

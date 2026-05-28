@@ -9,12 +9,19 @@ pipeline {
     }
 
     stages {
-        stage('Verify library loaded') {
+       stage('Verify library loaded') {
             steps {
                 script {
-                    echo 'Shared library loaded successfully'
+                    // verify vars/ functions are accessible
+                    assert binding.hasVariable('terraformPlan')   : 'terraformPlan not loaded'
+                    assert binding.hasVariable('terraformApply')  : 'terraformApply not loaded'
+                    assert binding.hasVariable('configureGithubWebhook') : 'configureGithubWebhook not loaded'
+
+                    // verify src/ class is instantiable
                     def auth = new org.reclaim.AwsOidcAuth(this)
-                    echo "AwsOidcAuth class instantiated: ${auth.class.name}"
+                    assert auth != null : 'AwsOidcAuth failed to instantiate'
+
+                    echo "All shared library components verified successfully"
                 }
             }
         }
